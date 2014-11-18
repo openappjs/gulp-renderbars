@@ -70,11 +70,20 @@ module.exports = function gulpRenderbars (options) {
     debug("flushing!");
 
     // render compiled templates
-    Object.keys(templates).forEach(function (path) {
+    for (var path in templates) {
       var obj = templates[path];
 
       // render the template to a string
-      var contents = obj.template(data);
+      var contents;
+      try {
+        contents = obj.template(data);
+      } catch (err) {
+        this.emit('error', new gutil.PluginError(
+          'gulp-renderbars',
+          err
+        ));
+        return cb();
+      }
 
       // create vinyl file object
       var file = new gutil.File({
@@ -85,7 +94,7 @@ module.exports = function gulpRenderbars (options) {
       });
       // push file object to stream
       this.push(file);
-    }.bind(this));
+    }
 
     cb();
   });
